@@ -1,0 +1,103 @@
+{
+    "title": "slump",
+    "mesh": {
+        "mesh": "slump/mesh.txt",
+        "boundary_conditions": {
+            "velocity_constraints": [
+                {
+                    "nset_id": 0,
+                    "dir": 0,
+                    "velocity": 0.0
+                },
+                {
+                    "nset_id": 1,
+                    "dir": 0,
+                    "velocity": 0.0
+                },
+                {
+                    "nset_id": 2,
+                    "dir": 1,
+                    "velocity": 0.0
+                },
+                {
+                    "nset_id": 3,
+                    "dir": 1,
+                    "velocity": 0.0
+                },
+                {
+                    "nset_id": 4,
+                    "dir": 2,
+                    "velocity": 0.0
+                },
+                {
+                    "nset_id": 5,
+                    "dir": 2,
+                    "velocity": 0.0
+                }
+            ],
+            "friction_constraints": [],
+            "particles_velocity_constraints": []
+        },
+        "isoparametric": false,
+        "check_duplicates": true,
+        "cell_type": "ED3H8",
+        "io_type": "Ascii3D",
+        "node_type": "N3D",
+        "entity_sets": "slump/entity_sets.json"
+    },
+    "particles": [
+        {
+            "generator": {
+                "check_duplicates": true,
+                "location": "slump/particles.txt",
+                "io_type": "Ascii3D",
+                "pset_id": 0,
+                "particle_type": "P3D",
+                "material_id": 0,
+                "type": "file"
+            }
+        }
+    ],
+    "materials": [
+        {
+            "id": 0,
+            "type": "Maxwell3D",
+            "density": 900,
+            "elasticity": 1000000.0,
+            "viscosity": 100000000.0
+        }
+    ],
+    "material_sets": [
+        {
+            "material_id": 0,
+            "pset_id": 1
+        }
+    ],
+    "external_loading_conditions": {
+        "gravity": [
+            0,
+            -9.81,
+            0
+        ]
+    },
+    "analysis": {
+        "type": "MPMExplicit3D",
+        "mpm_scheme": "usl",
+        "locate_particles": false,
+        "dt": 1e-05,
+        "damping": {
+            "type": "Cundall",
+            "damping_factor": 0.05
+        },
+        "velocity_update": false,
+        "nsteps": 1500000,
+        "uuid": "slump"
+    },
+    "post_processing": {
+        "path": "slump/results/",
+        "output_steps": 7500,
+        "vtk": [
+            "stresses"
+        ]
+    }
+}
