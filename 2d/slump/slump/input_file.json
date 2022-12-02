@@ -90,12 +90,12 @@
             "damping_factor": 0.05
         },
         "velocity_update": false,
-        "nsteps": 15000,
+        "nsteps": 9999,
         "uuid": "slump"
     },
     "post_processing": {
         "path": "slump/results/",
-        "output_steps": 150,
+        "output_steps": 99,
         "vtk": [
             "stresses"
         ]
