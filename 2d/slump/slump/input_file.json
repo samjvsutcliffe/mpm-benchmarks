@@ -61,10 +61,12 @@
     "materials": [
         {
             "id": 0,
-            "type": "LinearElastic3D",
+            "type": "NortonHoff3D",
             "density": 900,
-            "youngs_modulus": 9500000000.0,
-            "poisson_ratio": 0.3
+            "youngs_modulus": 950000.0,
+            "poisson_ratio": 0.3,
+            "viscosity": 1e-24,
+            "viscous_power": 3
         }
     ],
     "material_sets": [
@@ -90,12 +92,12 @@
             "damping_factor": 0.05
         },
         "velocity_update": false,
-        "nsteps": 9999,
+        "nsteps": 99999,
         "uuid": "slump"
     },
     "post_processing": {
         "path": "slump/results/",
-        "output_steps": 99,
+        "output_steps": 999,
         "vtk": [
             "stresses"
         ]
