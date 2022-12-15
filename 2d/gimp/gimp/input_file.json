@@ -51,10 +51,12 @@
     "materials": [
         {
             "id": 0,
-            "type": "LinearElastic2D",
+            "type": "NortonHoff2D",
             "density": 900,
-            "youngs_modulus": 9000000000.0,
-            "poisson_ratio": 0.325
+            "youngs_modulus": 100000000.0,
+            "poisson_ratio": 0.45,
+            "viscosity": 1e-30,
+            "viscous_power": 3
         }
     ],
     "material_sets": [
@@ -73,19 +75,19 @@
         "type": "MPMExplicit2D",
         "mpm_scheme": "usf",
         "locate_particles": false,
-        "dt": 5e-05,
+        "dt": 0.001,
         "damping": {
             "type": "Viscous",
-            "damping_factor": 10000000.0
+            "damping_factor": 100000.0
         },
         "velocity_update": "flip",
-        "nsteps": 19999,
+        "nsteps": 99999,
         "verbosity": 100,
         "uuid": "gimp"
     },
     "post_processing": {
         "path": "gimp/results/",
-        "output_steps": 199,
+        "output_steps": 999,
         "vtk": [
             "stresses",
             "volume"

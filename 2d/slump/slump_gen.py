@@ -40,8 +40,8 @@ resolutions = [20,20,1]
 
 particle_dims = (500.,100.,1)
 domain_dims = (800.,200.,1)
-sim.create_mesh(dimensions=domain_dims, ncells=[x//r for x,r in zip(domain_dims,resolutions)])
-pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r in zip(particle_dims,resolutions)])
+sim.create_mesh(dimensions=domain_dims, ncells=[x//r for x,r in zip(domain_dims,resolutions)],cell_type ="ED3H64G")
+pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r in zip(particle_dims,resolutions)],cell_type ="ED3H64G")
 
 #Pseudo-2d
 #sim.create_mesh(dimensions=domain_dims, ncells=(domain_dims[0]//resolution,domain_dims[1]//resolution,1))
@@ -52,16 +52,16 @@ pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r i
 # Creating Material Points, could have been done by filling an array manually:
 #sim.create_particles(npart_perdim_percell=1)
 sim.particles = utl.Particles(pmesh,2,directory=sim.directory)
-mps_per_cell = 4
+mps_per_cell = 2
 eff_res = [r/mps_per_cell for r in resolutions]
 origin = [r/(2*mps_per_cell) for r in resolutions]
 
-sim.particles.particles = np.mgrid[
-        origin[0]:particle_dims[0]:eff_res[0],
-        origin[1]:particle_dims[1]:eff_res[1],
-        0.5:1:0.5
-        #origin[2]:particle_dims[2]:eff_res[2],
-        ].reshape(3,-1).T 
+#sim.particles.particles = np.mgrid[
+#        origin[0]:particle_dims[0]:eff_res[0],
+#        origin[1]:particle_dims[1]:eff_res[1],
+#        0.5:1:0.5
+#        #origin[2]:particle_dims[2]:eff_res[2],
+#        ].reshape(3,-1).T 
 
 sim.particles._filename = "particles.txt"
 sim.particles.write_file(filename=sim._file_prefix+"particles")
@@ -72,21 +72,21 @@ sim.particles.write_file(filename=sim._file_prefix+"particles")
 sim.init_entity_sets()
 maxwell_particles = sim.entity_sets.create_set(lambda x,y,z: True, typ="particle")
 
-E = 1.0e7
+E = 1.0e6
 nu = 0.325
 density = 900
 
 # The materials properties:
 #sim.materials.create_MohrCoulomb3D(pset_id=lower_particles)
-#sim.materials.create_LinearElastic3D(pset_id=maxwell_particles,density=900,youngs_modulus=E,poisson_ratio=nu)
+sim.materials.create_LinearElastic3D(pset_id=maxwell_particles,density=900,youngs_modulus=E,poisson_ratio=nu)
 #sim.materials.create_Newtonian3D(pset_id=maxwell_particles)
 #create_Newtonian3D(sim.materials,pset_id=maxwell_particles)
 #create_Maxwell3D(sim.materials,pset_id=maxwell_particles)
-create_NortonHoff3D(sim.materials,pset_id=maxwell_particles,
-        density=900,
-        youngs_modulus=E,
-        poisson_ratio=nu,
-        viscosity=1e-28,viscous_power=3)
+#create_NortonHoff3D(sim.materials,pset_id=maxwell_particles,
+#        density=900,
+#        youngs_modulus=E,
+#        poisson_ratio=nu,
+#        viscosity=1e-40,viscous_power=3)
 
 # Boundary conditions on nodes entity sets (blocked displacements):
 walls = []
@@ -97,7 +97,7 @@ for direction, sets in enumerate(walls): _ = [sim.add_velocity_condition(directi
 
 # Other simulation parameters (gravity, number of iterations, time step, ..):
 sim.set_gravity([0,-9.81,0])
-time = 100
+time = 10
 nsteps = time//dt
 sim.set_analysis_parameters(dt=dt,type="MPMExplicit3D", nsteps=nsteps, 
         output_step_interval=nsteps/100,

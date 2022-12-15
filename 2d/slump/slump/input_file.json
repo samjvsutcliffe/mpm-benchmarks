@@ -40,7 +40,7 @@
         },
         "isoparametric": false,
         "check_duplicates": true,
-        "cell_type": "ED3H8",
+        "cell_type": "ED3H64G",
         "io_type": "Ascii3D",
         "node_type": "N3D",
         "entity_sets": "slump/entity_sets.json"
@@ -61,12 +61,10 @@
     "materials": [
         {
             "id": 0,
-            "type": "NortonHoff3D",
+            "type": "LinearElastic3D",
             "density": 900,
-            "youngs_modulus": 10000000.0,
-            "poisson_ratio": 0.325,
-            "viscosity": 1e-28,
-            "viscous_power": 3
+            "youngs_modulus": 1000000.0,
+            "poisson_ratio": 0.325
         }
     ],
     "material_sets": [
@@ -92,12 +90,12 @@
             "damping_factor": 0.001
         },
         "velocity_update": false,
-        "nsteps": 9999,
+        "nsteps": 999,
         "uuid": "slump"
     },
     "post_processing": {
         "path": "slump/results/",
-        "output_steps": 99,
+        "output_steps": 9,
         "vtk": [
             "stresses",
             "volume"

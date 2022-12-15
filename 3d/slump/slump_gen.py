@@ -33,14 +33,14 @@ def create_Newtonian3D(self, pset_id=0, density=1.225,
 sim = utl.Simulation(title="slump")
 
 resolution = 10
-resolutions = [20,20,20]
+resolutions = [40,40,40]
 
 # Creating the mesh:
 
 particle_dims = (500.,100.,200.)
 domain_dims = (600.,200.,400)
-sim.create_mesh(dimensions=domain_dims, ncells=[x//r for x,r in zip(domain_dims,resolutions)])
-pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,100), ncells=[x//r for x,r in zip(particle_dims,resolutions)])
+sim.create_mesh(dimensions=domain_dims, ncells=[x//r for x,r in zip(domain_dims,resolutions)],cell_type="ED3H64G")
+pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,100), ncells=[x//r for x,r in zip(particle_dims,resolutions)],cell_type="ED3H64G")
 
 #Pseudo-2d
 #sim.create_mesh(dimensions=domain_dims, ncells=(domain_dims[0]//resolution,domain_dims[1]//resolution,1))
@@ -61,15 +61,15 @@ maxwell_particles = sim.entity_sets.create_set(lambda x,y,z: True, typ="particle
 
 # The materials properties:
 #sim.materials.create_MohrCoulomb3D(pset_id=lower_particles)
-#sim.materials.create_LinearElastic3D(pset_id=maxwell_particles,density=900,youngs_modulus=9.5e9,poisson_ratio=.3)
+sim.materials.create_LinearElastic3D(pset_id=maxwell_particles,density=900,youngs_modulus=9.5e7,poisson_ratio=.325)
 #sim.materials.create_Newtonian3D(pset_id=maxwell_particles)
 #create_Newtonian3D(sim.materials,pset_id=maxwell_particles)
 #create_Maxwell3D(sim.materials,pset_id=maxwell_particles)
-create_NortonHoff3D(sim.materials,pset_id=maxwell_particles,
-        density=900,
-        youngs_modulus=9e9,
-        poisson_ratio=0.330,
-        viscosity=1e-24,viscous_power=3)
+#create_NortonHoff3D(sim.materials,pset_id=maxwell_particles,
+#        density=900,
+#        youngs_modulus=9e9,
+#        poisson_ratio=0.330,
+#        viscosity=1e-24,viscous_power=3)
 
 # Boundary conditions on nodes entity sets (blocked displacements):
 walls = []

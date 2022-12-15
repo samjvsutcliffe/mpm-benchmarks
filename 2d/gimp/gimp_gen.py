@@ -2,7 +2,7 @@ import pycbg.preprocessing as utl
 from pycbg.mesh import Mesh
 import numpy as np
 import math
-dt = 5e-5
+dt = 1e-3
 def create_Maxwell3D(self, pset_id=0,density=900,elasticity=1e6,viscosity=1e8):
 	self.pset_ids.append(pset_id)
 	self.materials.append({"id": len(self.materials),
@@ -11,10 +11,10 @@ def create_Maxwell3D(self, pset_id=0,density=900,elasticity=1e6,viscosity=1e8):
 	"elasticity": elasticity,
 	"viscosity": viscosity})
 
-def create_NortonHoff3D(self, pset_id=0,density=900,youngs_modulus=1e6,poisson_ratio=0.3,viscosity=1e8,viscous_power=1):
+def create_NortonHoff2D(self, pset_id=0,density=900,youngs_modulus=1e6,poisson_ratio=0.3,viscosity=1e8,viscous_power=1):
 	self.pset_ids.append(pset_id)
 	self.materials.append({"id": len(self.materials),
-	"type": "NortonHoff3D",
+	"type": "NortonHoff2D",
 	"density": density,
 	"youngs_modulus": youngs_modulus,
 	"poisson_ratio": poisson_ratio,
@@ -35,7 +35,7 @@ def create_Newtonian3D(self, pset_id=0, density=1.225,
 sim = utl.Simulation(title="gimp")
 
 resolution = 10
-resolutions = [5,5]
+resolutions = [resolution,resolution ]
 
 # Creating the mesh:
 
@@ -54,7 +54,7 @@ pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r i
 #pmesh = utl.Mesh(dimensions=particle_dims, ncells=(particle_dims[0]//resolution,particle_dims[1]//resolution,1))
 # Creating Material Points, could have been done by filling an array manually:
 #sim.create_particles(npart_perdim_percell=1)
-sim.particles = utl.Particles(pmesh,4,directory=sim.directory)
+sim.particles = utl.Particles(pmesh,2,directory=sim.directory)
 mps_per_cell = 2
 eff_res = [r/mps_per_cell for r in resolutions]
 origin = [r/(2*mps_per_cell) for r in resolutions]
@@ -75,21 +75,21 @@ sim.particles.write_file()
 sim.init_entity_sets()
 maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 
-E = 9e9
+E = 1e8
 nu = 0.325
 density = 900
 
 # The materials properties:
 #sim.materials.create_MohrCoulomb3D(pset_id=lower_particles)
-sim.materials.create_LinearElastic(pset_id=maxwell_particles,density=900,youngs_modulus=E,poisson_ratio=nu)
+#sim.materials.create_LinearElastic(pset_id=maxwell_particles,density=900,youngs_modulus=1e7,poisson_ratio=nu)
 #sim.materials.create_Newtonian3D(pset_id=maxwell_particles)
 #create_Newtonian3D(sim.materials,pset_id=maxwell_particles)
 #create_Maxwell3D(sim.materials,pset_id=maxwell_particles)
-#create_NortonHoff3D(sim.materials,pset_id=maxwell_particles,
-#        density=900,
-#        youngs_modulus=E,
-#        poisson_ratio=nu,
-#        viscosity=1e-40,viscous_power=3)
+create_NortonHoff2D(sim.materials,pset_id=maxwell_particles,
+        density=900,
+        youngs_modulus=E,
+        poisson_ratio=0.45,
+        viscosity=1e-30,viscous_power=3)
 
 # Boundary conditions on nodes entity sets (blocked displacements):
 walls = []
@@ -100,13 +100,16 @@ for direction, sets in enumerate(walls): _ = [sim.add_velocity_condition(directi
 
 # Other simulation parameters (gravity, number of iterations, time step, ..):
 sim.set_gravity([0,-9.81])
-time = 1
+time = 100
 nsteps = time//dt
 sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps, 
         output_step_interval=nsteps/100,
         damping=0.00)
-sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 1e7}
-#sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.5}
+        
+
+#sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 1e8}
+sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-3}
+#sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.05}
 sim.post_processing["vtk"] = ["stresses","volume"]
 
 # Save user defined parameters to be reused at the postprocessing stage:
