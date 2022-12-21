@@ -11,7 +11,7 @@
                 },
                 {
                     "nset_id": 1,
-                    "dir": 0,
+                    "dir": 1,
                     "velocity": 0.0
                 },
                 {
@@ -23,6 +23,11 @@
                     "nset_id": 3,
                     "dir": 1,
                     "velocity": 0.0
+                },
+                {
+                    "nset_id": 4,
+                    "dir": 0,
+                    "velocity": 1
                 }
             ],
             "friction_constraints": [],
@@ -39,23 +44,30 @@
         {
             "generator": {
                 "check_duplicates": true,
-                "location": "gimp/particles.txt",
-                "io_type": "Ascii2D",
                 "pset_id": 0,
+                "cset_id": 1,
+                "nparticles_per_dir": 2,
                 "particle_type": "P2D",
+                "velocity": [
+                    1,
+                    0
+                ],
+                "duration": [
+                    0,
+                    2000
+                ],
                 "material_id": 0,
-                "type": "file"
+                "type": "inject"
             }
         }
     ],
     "materials": [
         {
             "id": 0,
-            "type": "Glen2D",
+            "type": "Maxwell2D",
             "density": 900,
-            "bulk_modulus": 8000000000.0,
-            "viscosity": 110000000.0,
-            "viscous_power": 3
+            "elasticity": 9000000000.0,
+            "viscosity": 100000000.0
         }
     ],
     "material_sets": [
@@ -68,16 +80,23 @@
         "gravity": [
             0,
             -9.81
+        ],
+        "concentrated_nodal_forces": [
+            {
+                "nset_id": 5,
+                "dir": 1,
+                "force": 24500475.0
+            }
         ]
     },
     "analysis": {
         "type": "MPMExplicit2D",
         "mpm_scheme": "usf",
         "locate_particles": false,
-        "dt": 0.001,
+        "dt": 0.01,
         "damping": {
             "type": "Viscous",
-            "damping_factor": 80000000.0
+            "damping_factor": 9000000.0
         },
         "velocity_update": "flip",
         "nsteps": 99999,
