@@ -57,10 +57,10 @@ resolutions = [resolution,resolution ]
 # Creating the mesh:
 
 
-particle_dims = (100.,100.)
+shelf_length = 500
+particle_dims = (shelf_length,100.)
 domain_dims = (2000.,400.)
 
-shelf_length = 200
 
 #node_type = "ED2Q4"
 node_type = "ED2Q16G"
@@ -75,7 +75,7 @@ pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,100,0), ncells=[x//r for x,r
 #pmesh = utl.Mesh(dimensions=particle_dims, ncells=(particle_dims[0]//resolution,particle_dims[1]//resolution,1))
 # Creating Material Points, could have been done by filling an array manually:
 #sim.create_particles(npart_perdim_percell=1)
-mps_per_cell = 2
+mps_per_cell = 4
 sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory)
 eff_res = [r/mps_per_cell for r in resolutions]
 origin = [r/(2*mps_per_cell) for r in resolutions]
@@ -90,18 +90,18 @@ origin = [r/(2*mps_per_cell) for r in resolutions]
 sim.init_entity_sets()
 
 sim.particles._filename = "particles.txt"
-sim.particles.type = "inject"
-sim.particles.nparticles_per_dir = mps_per_cell
-inflow_rate = 1
-sim.particles._particle_velocity = [inflow_rate,0]
-sim.particles._particle_duration = [0,2000]
-points = sim.mesh.nodes
-ids = []
-for i, p in enumerate(points):
-    if (lambda x,y: y>100 and y<200 and x<50)(*p): 
-        ids.append(i)
-
-sim.particles.cset_id = sim.entity_sets.create_set(lambda *args:any(arg in ids for arg in args), typ="cell")
+#sim.particles.type = "inject"
+#sim.particles.nparticles_per_dir = mps_per_cell
+#inflow_rate = 1
+#sim.particles._particle_velocity = [inflow_rate,0]
+#sim.particles._particle_duration = [0,2000]
+#points = sim.mesh.nodes
+#ids = []
+#for i, p in enumerate(points):
+#    if (lambda x,y: y>100 and y<200 and x<50)(*p): 
+#        ids.append(i)
+#
+#sim.particles.cset_id = sim.entity_sets.create_set(lambda *args:any(arg in ids for arg in args), typ="cell")
 sim.particles.write_file()
 
 
@@ -110,7 +110,7 @@ sim.particles.write_file()
 maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 
 K = 8e9
-E = 9e9
+E = 1e9
 nu = 0.499
 density = 900
 density_water = 999
@@ -129,7 +129,7 @@ density_water = 999
 create_Maxwell2D(sim.materials,pset_id=maxwell_particles,
         density=900,
         elasticity=E,
-        viscosity=1e08)
+        viscosity=1e07)
 #create_Glen2D(sim.materials,pset_id=maxwell_particles,
 #        density=900,
 #        bulk_modulus=K,
@@ -138,13 +138,13 @@ create_Maxwell2D(sim.materials,pset_id=maxwell_particles,
 
 # Boundary conditions on nodes entity sets (blocked displacements):
 walls = []
-walls.append([sim.entity_sets.create_set(lambda x,y: x==lim, typ="node") for lim in [sim.mesh.l0]])
+walls.append([sim.entity_sets.create_set(lambda x,y: x==lim, typ="node") for lim in [0, sim.mesh.l0]])
 walls.append([sim.entity_sets.create_set(lambda x,y: y==lim, typ="node") for lim in [0, sim.mesh.l1]])
 #walls.append([sim.entity_sets.create_set(lambda x,y: y==lim, typ="node") for lim in [100]])
 #walls.append([sim.entity_sets.create_set(lambda x,y: z==lim, typ="node") for lim in [0, sim.mesh.l2]])
 for direction, sets in enumerate(walls): _ = [sim.add_velocity_condition(direction, 0., es) for es in sets]
 sim.add_velocity_condition(1,0.0,sim.entity_sets.create_set(lambda x,y: x<=shelf_length and y==100, typ="node"))
-sim.add_velocity_condition(0,inflow_rate,sim.entity_sets.create_set(lambda x,y: x<=50, typ="node"))
+#sim.add_velocity_condition(0,inflow_rate,sim.entity_sets.create_set(lambda x,y: x<=50, typ="node"))
 #sim.add_force(1,9.8*(900)*(resolution**2),sim.entity_sets.create_set(lambda x,y: x>=500 and y<=100, typ="node"))
 sim.add_force(1,9.81 * (density_water) * (resolution**2),sim.entity_sets.create_set(lambda x,y: x>=shelf_length and y<100, typ="node"))
 #sim.add_velocity_condition(0,0.0,sim.entity_sets.create_set(lambda x,y: x==500 and y<100, typ="node"))

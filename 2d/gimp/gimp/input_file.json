@@ -11,7 +11,7 @@
                 },
                 {
                     "nset_id": 1,
-                    "dir": 1,
+                    "dir": 0,
                     "velocity": 0.0
                 },
                 {
@@ -26,8 +26,8 @@
                 },
                 {
                     "nset_id": 4,
-                    "dir": 0,
-                    "velocity": 1
+                    "dir": 1,
+                    "velocity": 0.0
                 }
             ],
             "friction_constraints": [],
@@ -44,20 +44,12 @@
         {
             "generator": {
                 "check_duplicates": true,
+                "location": "gimp/particles.txt",
+                "io_type": "Ascii2D",
                 "pset_id": 0,
-                "cset_id": 1,
-                "nparticles_per_dir": 2,
                 "particle_type": "P2D",
-                "velocity": [
-                    1,
-                    0
-                ],
-                "duration": [
-                    0,
-                    2000
-                ],
                 "material_id": 0,
-                "type": "inject"
+                "type": "file"
             }
         }
     ],
@@ -66,8 +58,8 @@
             "id": 0,
             "type": "Maxwell2D",
             "density": 900,
-            "elasticity": 9000000000.0,
-            "viscosity": 100000000.0
+            "elasticity": 100000000.0,
+            "viscosity": 10000000.0
         }
     ],
     "material_sets": [
@@ -96,7 +88,7 @@
         "dt": 0.01,
         "damping": {
             "type": "Viscous",
-            "damping_factor": 9000000.0
+            "damping_factor": 100000.0
         },
         "velocity_update": "flip",
         "nsteps": 99999,
