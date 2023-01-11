@@ -10,12 +10,13 @@ def create_Maxwell3D(self, pset_id=0,density=900,elasticity=1e6,viscosity=1e8):
 	"density": density,
 	"elasticity": elasticity,
 	"viscosity": viscosity})
-def create_Maxwell2D(self, pset_id=0,density=900,elasticity=1e6,viscosity=1e8):
+def create_Maxwell2D(self, pset_id=0,density=900,youngs_modulus=1e6,poisson_ratio=0.3,viscosity=1e8):
 	self.pset_ids.append(pset_id)
 	self.materials.append({"id": len(self.materials),
 	"type": "Maxwell2D",
 	"density": density,
-	"elasticity": elasticity,
+	"youngs_modulus": youngs_modulus,
+	"poisson_ratio": poisson_ratio,
 	"viscosity": viscosity})
 
 def create_NortonHoff2D(self, pset_id=0,density=900,youngs_modulus=1e6,poisson_ratio=0.3,viscosity=1e8,viscous_power=1):
@@ -29,12 +30,18 @@ def create_NortonHoff2D(self, pset_id=0,density=900,youngs_modulus=1e6,poisson_r
 	"viscous_power":viscous_power 
         })
 
-def create_Glen2D(self, pset_id=0,density=900,bulk_modulus=1e6,viscosity=1e8,viscous_power=1):
+def create_Glen2D(self, pset_id=0,density=900,
+        youngs_modulus=1e6,
+        poisson_ratio=0.3,
+        viscosity=1e8,
+        viscous_power=1):
+
 	self.pset_ids.append(pset_id)
 	self.materials.append({"id": len(self.materials),
 	"type": "Glen2D",
 	"density": density,
-	"bulk_modulus": bulk_modulus,
+	"youngs_modulus": youngs_modulus,
+	"poisson_ratio": poisson_ratio,
 	"viscosity": viscosity,
 	"viscous_power":viscous_power 
         })
@@ -51,7 +58,7 @@ def create_Newtonian3D(self, pset_id=0, density=1.225,
 # The usual start of a PyCBG script:
 sim = utl.Simulation(title="gimp")
 
-resolution = 50 
+resolution =  50
 resolutions = [resolution,resolution ]
 
 # Creating the mesh:
@@ -65,7 +72,7 @@ domain_dims = (2000.,400.)
 #node_type = "ED2Q4"
 node_type = "ED2Q16G"
 sim.create_mesh(dimensions=domain_dims, ncells=[x//r for x,r in zip(domain_dims,resolutions)],cell_type = node_type)
-pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,100,0), ncells=[x//r for x,r in zip(particle_dims,resolutions)],cell_type =node_type)
+pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r in zip(particle_dims,resolutions)],cell_type =node_type)
 
 #Pseudo-2K
 #sim.create_mesh(dimensions=domain_dims, ncells=(domain_dims[0]//resolution,domain_dims[1]//resolution,1))
@@ -109,9 +116,8 @@ sim.particles.write_file()
 # Creating entity sets (the 2 materials), using lambda functions:
 maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 
-K = 8e9
-E = 1e9
-nu = 0.499
+E = 1e8
+nu = 0.325
 density = 900
 density_water = 999
 
@@ -126,14 +132,19 @@ density_water = 999
 #        youngs_modulus=E,
 #        poisson_ratio=0.45,
 #        viscosity=1e-30,viscous_power=3)
-create_Maxwell2D(sim.materials,pset_id=maxwell_particles,
+
+create_Glen2D(sim.materials,pset_id=maxwell_particles,
         density=900,
-        elasticity=E,
-        viscosity=1e07)
+        youngs_modulus=E,
+        poisson_ratio=nu,
+        viscosity=2.24e-20,
+        viscous_power=3
+        )
 #create_Glen2D(sim.materials,pset_id=maxwell_particles,
 #        density=900,
-#        bulk_modulus=K,
-#        viscosity=110e6,
+#        youngs_modulus=E,
+#        poisson_ratio=nu,
+#        viscosity=1e-35,
 #        viscous_power=3)
 
 # Boundary conditions on nodes entity sets (blocked displacements):
@@ -143,15 +154,16 @@ walls.append([sim.entity_sets.create_set(lambda x,y: y==lim, typ="node") for lim
 #walls.append([sim.entity_sets.create_set(lambda x,y: y==lim, typ="node") for lim in [100]])
 #walls.append([sim.entity_sets.create_set(lambda x,y: z==lim, typ="node") for lim in [0, sim.mesh.l2]])
 for direction, sets in enumerate(walls): _ = [sim.add_velocity_condition(direction, 0., es) for es in sets]
-sim.add_velocity_condition(1,0.0,sim.entity_sets.create_set(lambda x,y: x<=shelf_length and y==100, typ="node"))
-#sim.add_velocity_condition(0,inflow_rate,sim.entity_sets.create_set(lambda x,y: x<=50, typ="node"))
-#sim.add_force(1,9.8*(900)*(resolution**2),sim.entity_sets.create_set(lambda x,y: x>=500 and y<=100, typ="node"))
-sim.add_force(1,9.81 * (density_water) * (resolution**2),sim.entity_sets.create_set(lambda x,y: x>=shelf_length and y<100, typ="node"))
+
+#sim.add_velocity_condition(1,0.0,sim.entity_sets.create_set(lambda x,y: x<=shelf_length and y==100, typ="node"))
+#sim.add_friction_condition(1,-1,0.9,sim.entity_sets.create_set(lambda x,y: y==0 and x <=250, typ="node"))
+#
+#sim.add_force(1,9.81 * (density_water) * (resolution**2),sim.entity_sets.create_set(lambda x,y: x>=shelf_length and y<100, typ="node"))
 #sim.add_velocity_condition(0,0.0,sim.entity_sets.create_set(lambda x,y: x==500 and y<100, typ="node"))
 
 # Other simulation parameters (gravity, number of iterations, time step, ..):
 sim.set_gravity([0,-9.81])
-time = 1000
+time = 10000
 nsteps = time//dt
 sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps, 
         output_step_interval=nsteps/100,
@@ -159,7 +171,7 @@ sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps,
         
 
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 1e8}
-sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-3}
+sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-8}
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": K*1e-2}
 #sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.05}
 sim.post_processing["vtk"] = ["stresses","volume"]
