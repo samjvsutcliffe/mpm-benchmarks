@@ -116,7 +116,7 @@ sim.particles.write_file()
 # Creating entity sets (the 2 materials), using lambda functions:
 maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 
-E = 1e8
+E = 1e9
 nu = 0.325
 density = 900
 density_water = 999
@@ -137,7 +137,7 @@ create_Glen2D(sim.materials,pset_id=maxwell_particles,
         density=900,
         youngs_modulus=E,
         poisson_ratio=nu,
-        viscosity=2.24e-20,
+        viscosity=2.24e-24,
         viscous_power=3
         )
 #create_Glen2D(sim.materials,pset_id=maxwell_particles,
