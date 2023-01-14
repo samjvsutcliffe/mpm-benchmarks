@@ -2,7 +2,7 @@ import pycbg.preprocessing as utl
 from pycbg.mesh import Mesh
 import numpy as np
 import math
-dt = 1e-2
+dt = 1e-3
 def create_Maxwell3D(self, pset_id=0,density=900,elasticity=1e6,viscosity=1e8):
 	self.pset_ids.append(pset_id)
 	self.materials.append({"id": len(self.materials),
@@ -58,7 +58,7 @@ def create_Newtonian3D(self, pset_id=0, density=1.225,
 # The usual start of a PyCBG script:
 sim = utl.Simulation(title="gimp")
 
-resolution =  50
+resolution =  25
 resolutions = [resolution,resolution ]
 
 # Creating the mesh:
@@ -116,7 +116,7 @@ sim.particles.write_file()
 # Creating entity sets (the 2 materials), using lambda functions:
 maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 
-E = 1e9
+E = 1e8
 nu = 0.325
 density = 900
 density_water = 999
@@ -137,7 +137,8 @@ create_Glen2D(sim.materials,pset_id=maxwell_particles,
         density=900,
         youngs_modulus=E,
         poisson_ratio=nu,
-        viscosity=2.24e-24,
+        #viscosity=2.24e-24,
+        viscosity=1e6,
         viscous_power=3
         )
 #create_Glen2D(sim.materials,pset_id=maxwell_particles,
@@ -163,7 +164,7 @@ for direction, sets in enumerate(walls): _ = [sim.add_velocity_condition(directi
 
 # Other simulation parameters (gravity, number of iterations, time step, ..):
 sim.set_gravity([0,-9.81])
-time = 10000
+time = 1000
 nsteps = time//dt
 sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps, 
         output_step_interval=nsteps/100,
