@@ -1,2 +1,2 @@
 #!/bin/sh
-export PATH="$PATH:/mnt/e/Github/mpm/build"
+export PATH="$PATH:/mnt/d/Github/mpm/build"

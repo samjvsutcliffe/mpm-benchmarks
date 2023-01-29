@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import re
 import numpy as np
-dt = 1e-3
+dt = 1e-2
 data_dir = "./gimp/results/gimp/"
 files = os.listdir(data_dir)
 p = re.compile('.*\.h5') 
@@ -14,12 +14,11 @@ for f in h5_files:
     df = pd.read_hdf(data_dir+f)
     terminus.append(df["coord_x"].max())
     time.append(dt * float(re.findall("\d+",f)[0]))
-    df_hf = df
 time = np.array(time)
 terminus = np.array(terminus)
 terminus_displacement = terminus - terminus[0]
 df = pd.DataFrame({"Time (s)":time,"Terminus displacement":terminus_displacement})
-df.to_csv("terminus_position_049.csv")
+df.to_csv("terminus_position_4e6.csv")
 plt.title("Terminus evolution over time")
 plt.xlabel("Time (h)")
 plt.ylabel("u_x (m)")

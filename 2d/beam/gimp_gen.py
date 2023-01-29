@@ -2,7 +2,6 @@ import pycbg.preprocessing as utl
 from pycbg.mesh import Mesh
 import numpy as np
 import math
-dt = 1e-3
 def create_Maxwell3D(self, pset_id=0,density=900,elasticity=1e6,viscosity=1e8):
 	self.pset_ids.append(pset_id)
 	self.materials.append({"id": len(self.materials),
@@ -58,7 +57,9 @@ def create_Newtonian3D(self, pset_id=0, density=1.225,
 # The usual start of a PyCBG script:
 sim = utl.Simulation(title="beam")
 
-resolution =  25
+dt = 1e-3
+
+resolution =  50
 resolutions = [resolution,resolution ]
 
 # Creating the mesh:
@@ -69,8 +70,8 @@ particle_dims = (shelf_length,100.)
 domain_dims = (700.,600.)
 
 
-#node_type = "ED2Q4"
-node_type = "ED2Q16G"
+node_type = "ED2Q4"
+#node_type = "ED2Q16G"
 sim.create_mesh(dimensions=domain_dims, ncells=[x//r for x,r in zip(domain_dims,resolutions)],cell_type = node_type)
 pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,400,0), ncells=[x//r for x,r in zip(particle_dims,resolutions)],cell_type =node_type)
 
@@ -132,7 +133,7 @@ density_water = 999
 #        youngs_modulus=E,
 #        poisson_ratio=0.45,
 #        viscosity=1e-30,viscous_power=3)
-sim.materials.create_LinearElastic(pset_id=maxwell_particles,density=100,youngs_modulus=E,poisson_ratio=nu)
+sim.materials.create_LinearElastic(pset_id=maxwell_particles,density=density,youngs_modulus=E,poisson_ratio=nu)
 
 #create_Glen2D(sim.materials,pset_id=maxwell_particles,
 #        density=900,
@@ -170,11 +171,12 @@ time = 100
 nsteps = time//dt
 sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps, 
         output_step_interval=nsteps/100,
+        #mpm_scheme="usl",
         damping=0.00)
         
 
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 1e8}
-sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-2}
+sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-5}
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": K*1e-2}
 #sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.05}
 sim.post_processing["vtk"] = ["stresses","volume"]
