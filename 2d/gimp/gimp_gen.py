@@ -58,7 +58,7 @@ def create_Newtonian3D(self, pset_id=0, density=1.225,
 # The usual start of a PyCBG script:
 sim = utl.Simulation(title="gimp")
 
-resolution =  25
+resolution = 25
 resolutions = [resolution,resolution ]
 
 # Creating the mesh:
@@ -69,8 +69,8 @@ particle_dims = (shelf_length,100.)
 domain_dims = (2000.,400.)
 
 
-#node_type = "ED2Q4"
-node_type = "ED2Q16G"
+node_type = "ED2Q4"
+#node_type = "ED2Q16G"
 sim.create_mesh(dimensions=domain_dims, ncells=[x//r for x,r in zip(domain_dims,resolutions)],cell_type = node_type)
 pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r in zip(particle_dims,resolutions)],cell_type =node_type)
 
@@ -82,17 +82,20 @@ pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r i
 #pmesh = utl.Mesh(dimensions=particle_dims, ncells=(particle_dims[0]//resolution,particle_dims[1]//resolution,1))
 # Creating Material Points, could have been done by filling an array manually:
 #sim.create_particles(npart_perdim_percell=1)
-mps_per_cell = 4
-sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory)
-eff_res = [r/mps_per_cell for r in resolutions]
-origin = [r/(2*mps_per_cell) for r in resolutions]
+mps_per_cell = 2
 
-#sim.particles.particles = np.mgrid[
-#        origin[0]:particle_dims[0]:eff_res[0],
-#        origin[1]:particle_dims[1]:eff_res[1],
-#        0.5:1:0.5
-#        #origin[2]:particle_dims[2]:eff_res[2],
-#        ].reshape(3,-1).T 
+sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particle_type = "")
+
+mps_array = [1,1]
+eff_res = [r/(mps_per_cell*mps) for r,mps in zip(resolutions,mps_array)]
+origin = [r/(2*mps_per_cell*mps) for r,mps in  zip(resolutions,mps_array)]
+
+sim.particles.positions = np.mgrid[
+        origin[0]:particle_dims[0]:eff_res[0],
+        origin[1]:particle_dims[1]:eff_res[1]
+        #0.5:1:0.5
+        #origin[2]:particle_dims[2]:eff_res[2],
+        ].reshape(2,-1).T 
 
 sim.init_entity_sets()
 
@@ -116,8 +119,9 @@ sim.particles.write_file()
 # Creating entity sets (the 2 materials), using lambda functions:
 maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 
-E = 1e8
-nu = 0.325
+E = 1e9
+nu = 0.49
+visc = 2e6
 density = 900
 density_water = 999
 
@@ -138,7 +142,7 @@ create_Glen2D(sim.materials,pset_id=maxwell_particles,
         youngs_modulus=E,
         poisson_ratio=nu,
         #viscosity=2.24e-24,
-        viscosity=1e6,
+        viscosity=visc,
         viscous_power=3
         )
 #create_Glen2D(sim.materials,pset_id=maxwell_particles,
@@ -175,7 +179,7 @@ sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps,
 sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-8}
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": K*1e-2}
 #sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.05}
-sim.post_processing["vtk"] = ["stresses","volume"]
+sim.post_processing["vtk"] = ["stresses"]
 
 # Save user defined parameters to be reused at the postprocessing stage:
 sim.add_custom_parameters({"maxwell_particles": maxwell_particles,

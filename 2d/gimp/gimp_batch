@@ -3,4 +3,4 @@ python3 gimp_gen.py
 echo "Removing files"
 rm gimp/results/gimp/*
 echo "Running code"
-mpm -p 8 -i ./gimp/input_file.json -f ./
+mpm -p 8 -i ./gimp/input_file.json -f ./ | tee out.txt

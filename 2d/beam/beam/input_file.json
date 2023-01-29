@@ -86,7 +86,7 @@
         "dt": 0.001,
         "damping": {
             "type": "Viscous",
-            "damping_factor": 1000000.0
+            "damping_factor": 1000.0000000000001
         },
         "velocity_update": "flip",
         "nsteps": 99999,

@@ -53,7 +53,7 @@
             "id": 0,
             "type": "LinearElastic2D",
             "density": 80,
-            "youngs_modulus": 1000000.0,
+            "youngs_modulus": 10000000.0,
             "poisson_ratio": 0.0
         }
     ],
@@ -76,16 +76,16 @@
         "dt": 0.01,
         "damping": {
             "type": "Viscous",
-            "damping_factor": 1000.0
+            "damping_factor": 10000.0
         },
-        "velocity_update": "flip",
-        "nsteps": 999,
+        "velocity_update": true,
+        "nsteps": 9999,
         "verbosity": 100,
         "uuid": "consol"
     },
     "post_processing": {
         "path": "consol/results/",
-        "output_steps": 9,
+        "output_steps": 99,
         "vtk": [
             "stresses",
             "volume"

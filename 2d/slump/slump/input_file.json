@@ -23,16 +23,6 @@
                     "nset_id": 3,
                     "dir": 1,
                     "velocity": 0.0
-                },
-                {
-                    "nset_id": 4,
-                    "dir": 2,
-                    "velocity": 0.0
-                },
-                {
-                    "nset_id": 5,
-                    "dir": 2,
-                    "velocity": 0.0
                 }
             ],
             "friction_constraints": [],
@@ -40,9 +30,9 @@
         },
         "isoparametric": false,
         "check_duplicates": true,
-        "cell_type": "ED3H64G",
-        "io_type": "Ascii3D",
-        "node_type": "N3D",
+        "cell_type": "ED2Q4",
+        "io_type": "Ascii2D",
+        "node_type": "N2D",
         "entity_sets": "slump/entity_sets.json"
     },
     "particles": [
@@ -50,9 +40,9 @@
             "generator": {
                 "check_duplicates": true,
                 "location": "slump/particles.txt",
-                "io_type": "Ascii3D",
+                "io_type": "Ascii2D",
                 "pset_id": 0,
-                "particle_type": "P3D",
+                "particle_type": "P2DFS",
                 "material_id": 0,
                 "type": "file"
             }
@@ -61,10 +51,12 @@
     "materials": [
         {
             "id": 0,
-            "type": "LinearElastic3D",
+            "type": "Glen2D",
             "density": 900,
-            "youngs_modulus": 1000000.0,
-            "poisson_ratio": 0.325
+            "youngs_modulus": 1000000000.0,
+            "poisson_ratio": 0.325,
+            "viscosity": 1000000.0,
+            "viscous_power": 3
         }
     ],
     "material_sets": [
@@ -76,29 +68,28 @@
     "external_loading_conditions": {
         "gravity": [
             0,
-            -9.81,
-            0
+            -9.81
         ]
     },
     "analysis": {
-        "type": "MPMExplicit3D",
-        "mpm_scheme": "usl",
+        "type": "MPMExplicit2D",
+        "mpm_scheme": "usf",
         "locate_particles": false,
         "dt": 0.01,
         "damping": {
             "type": "Viscous",
-            "damping_factor": 0.001
+            "damping_factor": 1000000.0
         },
-        "velocity_update": false,
-        "nsteps": 999,
+        "velocity_update": "flip",
+        "nsteps": 999999,
+        "verbosity": 100,
         "uuid": "slump"
     },
     "post_processing": {
         "path": "slump/results/",
-        "output_steps": 9,
+        "output_steps": 9999,
         "vtk": [
-            "stresses",
-            "volume"
+            "stresses"
         ]
     }
 }
