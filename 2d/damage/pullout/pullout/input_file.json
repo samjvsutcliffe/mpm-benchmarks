@@ -1,0 +1,93 @@
+{
+    "title": "pullout",
+    "mesh": {
+        "mesh": "pullout/mesh.txt",
+        "boundary_conditions": {
+            "velocity_constraints": [
+                {
+                    "nset_id": 0,
+                    "dir": 0,
+                    "velocity": 0.0
+                },
+                {
+                    "nset_id": 1,
+                    "dir": 0,
+                    "velocity": 0.0
+                },
+                {
+                    "nset_id": 2,
+                    "dir": 1,
+                    "velocity": 0.0
+                },
+                {
+                    "nset_id": 3,
+                    "dir": 1,
+                    "velocity": 0.0
+                }
+            ],
+            "friction_constraints": [],
+            "particles_velocity_constraints": []
+        },
+        "isoparametric": false,
+        "check_duplicates": true,
+        "cell_type": "ED2Q4",
+        "io_type": "Ascii2D",
+        "node_type": "N2D",
+        "entity_sets": "pullout/entity_sets.json"
+    },
+    "particles": [
+        {
+            "generator": {
+                "check_duplicates": true,
+                "location": "pullout/particles.txt",
+                "io_type": "Ascii2D",
+                "pset_id": 0,
+                "particle_type": "P2D",
+                "material_id": 0,
+                "type": "file"
+            }
+        }
+    ],
+    "materials": [
+        {
+            "id": 0,
+            "type": "LinearElastic2D",
+            "density": 900,
+            "youngs_modulus": 100000000.0,
+            "poisson_ratio": 0.325
+        }
+    ],
+    "material_sets": [
+        {
+            "material_id": 0,
+            "pset_id": 1
+        }
+    ],
+    "external_loading_conditions": {
+        "gravity": [
+            0,
+            -9.81
+        ]
+    },
+    "analysis": {
+        "type": "MPMExplicit2D",
+        "mpm_scheme": "usf",
+        "locate_particles": false,
+        "dt": 0.001,
+        "damping": {
+            "type": "Viscous",
+            "damping_factor": 100000.0
+        },
+        "velocity_update": "flip",
+        "nsteps": 9999,
+        "verbosity": 100,
+        "uuid": "pullout"
+    },
+    "post_processing": {
+        "path": "pullout/results/",
+        "output_steps": 99,
+        "vtk": [
+            "stresses"
+        ]
+    }
+}
