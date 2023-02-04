@@ -42,7 +42,7 @@
                 "location": "pullout/particles.txt",
                 "io_type": "Ascii2D",
                 "pset_id": 0,
-                "particle_type": "P2D",
+                "particle_type": "P2D_DAMAGE",
                 "material_id": 0,
                 "type": "file"
             }
@@ -51,10 +51,12 @@
     "materials": [
         {
             "id": 0,
-            "type": "LinearElastic2D",
+            "type": "LinearElasticDamage2D",
             "density": 900,
             "youngs_modulus": 100000000.0,
-            "poisson_ratio": 0.325
+            "poisson_ratio": 0.325,
+            "critical_stress": 1000000.0,
+            "damage_rate": 0.01
         }
     ],
     "material_sets": [
@@ -67,27 +69,35 @@
         "gravity": [
             0,
             -9.81
+        ],
+        "particle_surface_traction": [
+            {
+                "pset_id": 2,
+                "dir": 0,
+                "traction": 1000.0
+            }
         ]
     },
     "analysis": {
         "type": "MPMExplicit2D",
         "mpm_scheme": "usf",
         "locate_particles": false,
-        "dt": 0.001,
+        "dt": 0.01,
         "damping": {
             "type": "Viscous",
             "damping_factor": 100000.0
         },
         "velocity_update": "flip",
-        "nsteps": 9999,
+        "nsteps": 99999,
         "verbosity": 100,
         "uuid": "pullout"
     },
     "post_processing": {
         "path": "pullout/results/",
-        "output_steps": 99,
+        "output_steps": 999,
         "vtk": [
-            "stresses"
+            "stresses",
+            "damage"
         ]
     }
 }
