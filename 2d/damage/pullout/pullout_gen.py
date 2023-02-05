@@ -130,7 +130,7 @@ walls.append([sim.entity_sets.create_set(lambda x,y: y==lim, typ="node") for lim
 
 for direction, sets in enumerate(walls): _ = [sim.add_velocity_condition(direction, 0., es) for es in sets]
 #sim.add_velocity_condition(0, 10, load_particles,typ="particle")
-sim.add_force(0, 1e3, load_particles,typ="particle")
+sim.add_force(0, 1e5, load_particles,typ="particle")
 print("Max x position {}".format(max_p))
 print("load mps")
 print(load_particles)
