@@ -11,3 +11,5 @@
 *.msh*
 **parallel-*
 *.swp
+*.vtp
+*.h5
