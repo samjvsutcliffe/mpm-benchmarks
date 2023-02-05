@@ -4,7 +4,7 @@ import os
 import re
 import numpy as np
 dt = 1e-2
-data_dir = "./gimp/results/gimp/"
+data_dir = "./consol/results/consol/"
 files = os.listdir(data_dir)
 p = re.compile('.*\.h5') 
 h5_files = [f for f in files if p.match(f)]
