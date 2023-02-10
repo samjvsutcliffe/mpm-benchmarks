@@ -3,18 +3,19 @@ from pycbg.mesh import Mesh
 import numpy as np
 import subprocess
 import math
-dt = 1e-2
+dt = 1e-3
 
 
 
 print("Starting convergance analysis")
 
-for mesh_res in [2,4]:
+for mesh_res in [2**x for x in range(1,13)]:
     # The usual start of a PyCBG script:
-    sim_name = "consol_{}".format(mesh_res)
+    sim_name = "consol_conv_{}".format(mesh_res)
     print("Generating simulation h={}".format(mesh_res))
     sim = utl.Simulation(title=sim_name)
 
+    dt = 1e-1 / mesh_res
     resolution = 50/mesh_res
     resolutions = [resolution,resolution]
     # Creating the mesh:
@@ -37,7 +38,7 @@ for mesh_res in [2,4]:
     #gen_gimp_mesh(domain_dims,[x//r for x,r in zip(domain_dims,resolutions)],"consol",sim.mesh)
     pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r in zip(particle_dims,resolutions)],cell_type=node_type)
 
-    mps_per_cell = 4
+    mps_per_cell = 2
     sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particle_type="FS")
 
     #mps_array = [1,1]
@@ -76,7 +77,7 @@ for mesh_res in [2,4]:
     for direction, sets in enumerate(walls): _ = [sim.add_velocity_condition(direction, 0., es) for es in sets]
     # Other simulation parameters (gravity, number of iterations, time step, ..):
     sim.set_gravity([0,-10])
-    time = 50
+    time = 100
     nsteps = time//dt
     sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps, 
             output_step_interval=nsteps-1,
@@ -88,7 +89,8 @@ for mesh_res in [2,4]:
     sim.write_input_file()
 
     print("Running simulation h={}".format(mesh_res))
-    subprocess.run(["mpm","-p","8","-i","./{}/input_file.json".format(sim_name),"-f", "./"])
+    print("DT: {}".format(dt))
+    subprocess.run(["mpm","-p","16","-i","./{}/input_file.json".format(sim_name),"-f", "./"])
     #subprocess.run(["mpm"])
     print("Sim finished")
 

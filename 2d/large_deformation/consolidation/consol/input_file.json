@@ -79,13 +79,13 @@
             "damping_factor": 1000.0
         },
         "velocity_update": true,
-        "nsteps": 24999,
+        "nsteps": 99999,
         "verbosity": 100,
         "uuid": "consol"
     },
     "post_processing": {
         "path": "consol/results/",
-        "output_steps": 249,
+        "output_steps": 999,
         "vtk": [
             "stresses",
             "volume"

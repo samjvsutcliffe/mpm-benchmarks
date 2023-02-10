@@ -7,12 +7,13 @@ dt = 1e-3
 # The usual start of a PyCBG script:
 sim = utl.Simulation(title="consol")
 
-resolution = 0.125
+length = 50
+resolution = 0.5
+
 resolutions = [resolution,resolution]
 # Creating the mesh:
 
 #shelf_length = resolution
-length = 50
 particle_dims   = (resolution,length)
 domain_dims     = (resolution,length + (2*resolution))
 
@@ -29,7 +30,7 @@ sim.create_mesh(dimensions=domain_dims, ncells=[x//r for x,r in zip(domain_dims,
 #gen_gimp_mesh(domain_dims,[x//r for x,r in zip(domain_dims,resolutions)],"consol",sim.mesh)
 pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r in zip(particle_dims,resolutions)],cell_type=node_type)
 
-mps_per_cell = 4
+mps_per_cell = 2
 sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particle_type="FS")
 
 #mps_array = [1,1]
@@ -70,7 +71,7 @@ for direction, sets in enumerate(walls): _ = [sim.add_velocity_condition(directi
 
 # Other simulation parameters (gravity, number of iterations, time step, ..):
 sim.set_gravity([0,-10])
-time = 25
+time = 100
 nsteps = time//dt
 sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps, 
         output_step_interval=nsteps/100,
