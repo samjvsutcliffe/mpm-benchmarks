@@ -90,7 +90,8 @@ for mesh_res in [2**x for x in range(1,13)]:
 
     print("Running simulation h={}".format(mesh_res))
     print("DT: {}".format(dt))
-    subprocess.run(["mpm","-p","16","-i","./{}/input_file.json".format(sim_name),"-f", "./"])
+    subprocess.run(["mpm","-p","16","-i","./{}/input_file.json".format(sim_name),"-f", "./"],
+            shell=True)
     #subprocess.run(["mpm"])
     print("Sim finished")
 
