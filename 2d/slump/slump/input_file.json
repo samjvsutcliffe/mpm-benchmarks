@@ -30,7 +30,7 @@
         },
         "isoparametric": false,
         "check_duplicates": true,
-        "cell_type": "ED2Q4",
+        "cell_type": "ED2GIMP",
         "io_type": "Ascii2D",
         "node_type": "N2D",
         "entity_sets": "slump/entity_sets.json"
@@ -55,7 +55,7 @@
             "density": 900,
             "youngs_modulus": 1000000000.0,
             "poisson_ratio": 0.325,
-            "viscosity": 1000000.0,
+            "viscosity": 11000000.0,
             "viscous_power": 3
         }
     ],
@@ -81,13 +81,13 @@
             "damping_factor": 1000000.0
         },
         "velocity_update": "flip",
-        "nsteps": 999999,
+        "nsteps": 99999,
         "verbosity": 100,
         "uuid": "slump"
     },
     "post_processing": {
         "path": "slump/results/",
-        "output_steps": 9999,
+        "output_steps": 999,
         "vtk": [
             "stresses"
         ]
