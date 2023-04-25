@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Request resources:
-#SBATCH -c 16     # 1 entire node
+#SBATCH -c 64     # 1 entire node
 #SBATCH --time=10:00:0  # 6 hours (hours:minutes:seconds)
 #SBATCH --mem=3G      # 1 GB RAM
 #SBATCH -p shared
@@ -17,9 +17,17 @@ module load eigen
 module load python
 pip install -e ~/cb-geo/pycbg
 
+export OMP_SCHEDULE="static"
+
 source ~/cb-geo/mpm/build/setup-vars.sh
 export PATH=~/cb-geo/mpm/build/:$PATH
 echo "Removing files"
 rm -r ./consol_conv*
+rm -r ./conv_files/*
 echo "Generating files"
 python3 converg_gen.py
+for i in {1..10}
+do
+    mpm -i ./consol_conv_$((2**$i))/input_file.json -f ./
+done
+python3 find_conv_files.py
