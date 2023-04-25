@@ -18,6 +18,7 @@ for mesh_res in [2**x for x in range(1,10)]:
     resolution = 50/mesh_res
     resolutions = [resolution,resolution]
     # Creating the mesh:
+    dt = 1e-2 * (2**5/mesh_res)
 
     #shelf_length = resolution
     length = 50

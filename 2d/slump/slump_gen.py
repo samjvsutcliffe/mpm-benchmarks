@@ -31,10 +31,11 @@ resolutions = [resolution,resolution ]
 
 shelf_length = 500
 particle_dims = (shelf_length,100.)
-domain_dims = (2000.,400.)
+domain_dims = (2000.,200.)
 
 
-node_type = "ED2Q4"
+#node_type = "ED2Q4"
+node_type = "ED2GIMP"
 #node_type = "ED2Q16G"
 sim.create_mesh(dimensions=domain_dims, ncells=[x//r for x,r in zip(domain_dims,resolutions)],cell_type = node_type)
 pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r in zip(particle_dims,resolutions)],cell_type =node_type)
@@ -47,20 +48,20 @@ pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r i
 #pmesh = utl.Mesh(dimensions=particle_dims, ncells=(particle_dims[0]//resolution,particle_dims[1]//resolution,1))
 # Creating Material Points, could have been done by filling an array manually:
 #sim.create_particles(npart_perdim_percell=1)
-mps_per_cell = 2
+mps_per_cell = 4
 
 sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particle_type = "FS")
 
-mps_array = [1,1]
-eff_res = [r/(mps_per_cell*mps) for r,mps in zip(resolutions,mps_array)]
-origin = [r/(2*mps_per_cell*mps) for r,mps in  zip(resolutions,mps_array)]
-
-sim.particles.positions = np.mgrid[
-        origin[0]:particle_dims[0]:eff_res[0],
-        origin[1]:particle_dims[1]:eff_res[1]
-        #0.5:1:0.5
-        #origin[2]:particle_dims[2]:eff_res[2],
-        ].reshape(2,-1).T 
+#mps_array = [1,1]
+#eff_res = [r/(mps_per_cell*mps) for r,mps in zip(resolutions,mps_array)]
+#origin = [r/(2*mps_per_cell*mps) for r,mps in  zip(resolutions,mps_array)]
+#
+#sim.particles.positions = np.mgrid[
+#        origin[0]:particle_dims[0]:eff_res[0],
+#        origin[1]:particle_dims[1]:eff_res[1]
+#        #0.5:1:0.5
+#        #origin[2]:particle_dims[2]:eff_res[2],
+#        ].reshape(2,-1).T 
 
 sim.init_entity_sets()
 
@@ -86,7 +87,7 @@ maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 
 E = 1e9
 nu = 0.325
-visc = 1e6
+visc = 11e6
 density = 900
 density_water = 999
 
@@ -133,7 +134,7 @@ for direction, sets in enumerate(walls): _ = [sim.add_velocity_condition(directi
 
 # Other simulation parameters (gravity, number of iterations, time step, ..):
 sim.set_gravity([0,-9.81])
-time = 10000
+time = 1000
 nsteps = time//dt
 sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps, 
         output_step_interval=nsteps/100,
