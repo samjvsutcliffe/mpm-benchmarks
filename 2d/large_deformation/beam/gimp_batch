@@ -1,0 +1,7 @@
+#! /bin/bash
+python3 gimp_gen.py
+echo "Removing files"
+rm beam/results/beam/*
+echo "Running code"
+export OMP_SCHEDULE="static"
+mpm -i ./beam/input_file.json -f ./

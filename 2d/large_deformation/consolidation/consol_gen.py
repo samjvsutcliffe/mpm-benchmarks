@@ -7,8 +7,16 @@ dt = 1e-3
 # The usual start of a PyCBG script:
 sim = utl.Simulation(title="consol")
 
+#elements = 2**5
+elements = 2**11
+print("Elements",elements)
 length = 50
-resolution = 0.5
+resolution = length/elements
+dt = 1e-2 * ((2**5)/elements)
+#dt = dt * 1e-3
+print("Dt suggested {}".format(dt))
+#dt = 1e-4
+
 
 resolutions = [resolution,resolution]
 # Creating the mesh:
@@ -23,17 +31,17 @@ domain_dims     = (resolution,length + (2*resolution))
 
 
 #node_type = "ED2Q4"
-#node_type = "ED2Q16G"
 node_type = "ED2GIMP"
+#node_type = "ED2Q16G"
 #node_type = "ED3H64G"
 sim.create_mesh(dimensions=domain_dims, ncells=[x//r for x,r in zip(domain_dims,resolutions)],cell_type = node_type)
 #gen_gimp_mesh(domain_dims,[x//r for x,r in zip(domain_dims,resolutions)],"consol",sim.mesh)
 pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r in zip(particle_dims,resolutions)],cell_type=node_type)
 
 mps_per_cell = 2
-sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particle_type="FS")
+sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particle_type="")
 
-#mps_array = [1,1]
+#mps_array = [1,4]
 #eff_res = [r/(mps_per_cell*mps) for r,mps in zip(resolutions,mps_array)]
 #origin = [r/(2*mps_per_cell*mps) for r,mps in  zip(resolutions,mps_array)]
 #
@@ -56,7 +64,7 @@ maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 
 E = 1e6
 nu = 0.0
-density = 800
+density = 80
 density_water = 999
 
 # The materials properties:
@@ -71,17 +79,21 @@ for direction, sets in enumerate(walls): _ = [sim.add_velocity_condition(directi
 
 # Other simulation parameters (gravity, number of iterations, time step, ..):
 sim.set_gravity([0,-10])
-time = 100
-nsteps = time//dt
+time = 10
+nsteps = int(time/dt)
 sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps, 
         output_step_interval=nsteps/100,
+        mpm_scheme="USF",
         damping=0.00)
         
 
-sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-3}
-sim.analysis_params["velocity_update"] = True
-#sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.05}
-sim.post_processing["vtk"] = ["stresses","volume"]
+#sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-4 * resolution}
+#sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-5*(2**5)/elements}
+#sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-8}
+#sim.analysis_params["velocity_update"] = True
+sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.10}
+#sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 0.0}
+sim.post_processing["vtk"] = ["stresses"]
 
 # Save user defined parameters to be reused at the postprocessing stage:
 sim.add_custom_parameters({"maxwell_particles": maxwell_particles,
@@ -95,6 +107,8 @@ mu = E / (2*(1+nu))
 bulk_stiffness = ((3 * l)+(2*mu))/3
 min_x = min(resolutions[0:1])
 speed_of_sound = math.sqrt(bulk_stiffness/density)
+
+print("DT crit {}".format(min_x/speed_of_sound))
 
 courant = speed_of_sound * dt/min_x
 
