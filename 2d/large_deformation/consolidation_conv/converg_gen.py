@@ -9,7 +9,7 @@ dt = 1e-4
 
 print("Starting convergance analysis")
 
-for mesh_res in [2**x for x in range(1,10)]:
+for mesh_res in [2**x for x in range(1,11)]:
     # The usual start of a PyCBG script:
     sim_name = "consol_conv_{}".format(mesh_res)
     print("Generating simulation elements={}".format(mesh_res))
@@ -64,7 +64,7 @@ for mesh_res in [2**x for x in range(1,10)]:
 
     E = 1e6
     nu = 0.0
-    density = 800
+    density = 80
     density_water = 999
 
     # The materials properties:
@@ -83,7 +83,7 @@ for mesh_res in [2**x for x in range(1,10)]:
             output_step_interval=nsteps-1,
             damping=0.00)
     #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-3}
-    sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.05}
+    sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.1}
     #sim.analysis_params["velocity_update"] = True
     #sim.post_processing["vtk"] = ["stresses","volume"]
     sim.add_custom_parameters({"maxwell_particles": maxwell_particles, "walls": walls})
@@ -91,7 +91,7 @@ for mesh_res in [2**x for x in range(1,10)]:
 
     print("Running simulation h={}".format(mesh_res))
     print("DT: {}".format(dt))
-    subprocess.run(["mpm","-p","16","-i","./{}/input_file.json".format(sim_name),"-f", "./"])
+    #subprocess.run(["mpm","-p","16","-i","./{}/input_file.json".format(sim_name),"-f", "./"])
     #subprocess.run(["mpm"])
     print("Sim finished")
 

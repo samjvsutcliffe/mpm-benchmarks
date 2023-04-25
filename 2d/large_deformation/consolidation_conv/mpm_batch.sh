@@ -17,7 +17,6 @@ module load eigen
 module load python
 pip install -e ~/cb-geo/pycbg
 
-export OMP_SCHEDULE="static"
 
 source ~/cb-geo/mpm/build/setup-vars.sh
 export PATH=~/cb-geo/mpm/build/:$PATH
@@ -25,9 +24,11 @@ echo "Removing files"
 rm -r ./consol_conv*
 rm -r ./conv_files/*
 echo "Generating files"
+export OMP_SCHEDULE="static"
 python3 converg_gen.py
 for i in {1..10}
 do
+    echo "Running consol_conv_$((2**$i))"
     mpm -i ./consol_conv_$((2**$i))/input_file.json -f ./
 done
 python3 find_conv_files.py
