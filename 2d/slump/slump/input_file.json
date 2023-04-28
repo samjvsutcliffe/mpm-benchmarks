@@ -42,7 +42,7 @@
                 "location": "slump/particles.txt",
                 "io_type": "Ascii2D",
                 "pset_id": 0,
-                "particle_type": "P2DFS",
+                "particle_type": "P2D",
                 "material_id": 0,
                 "type": "file"
             }
@@ -55,8 +55,8 @@
             "density": 900,
             "youngs_modulus": 1000000000.0,
             "poisson_ratio": 0.325,
-            "viscosity": 11000000.0,
-            "viscous_power": 3
+            "viscosity": 1000000.0,
+            "viscous_power": 3.0
         }
     ],
     "material_sets": [
@@ -77,17 +77,17 @@
         "locate_particles": false,
         "dt": 0.01,
         "damping": {
-            "type": "Viscous",
-            "damping_factor": 1000000.0
+            "type": "Cundall",
+            "damping_factor": 0.0
         },
         "velocity_update": "flip",
-        "nsteps": 99999,
+        "nsteps": 9999,
         "verbosity": 100,
         "uuid": "slump"
     },
     "post_processing": {
         "path": "slump/results/",
-        "output_steps": 999,
+        "output_steps": 99,
         "vtk": [
             "stresses"
         ]

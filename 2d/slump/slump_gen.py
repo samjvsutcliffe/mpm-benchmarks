@@ -5,10 +5,10 @@ import math
 dt = 1e-2
 
 def create_Glen2D(self, pset_id=0,density=900,
-        youngs_modulus=1e6,
+        youngs_modulus=1e9,
         poisson_ratio=0.3,
-        viscosity=1e8,
-        viscous_power=1):
+        viscosity=1e6,
+        viscous_power=1.0):
 
 	self.pset_ids.append(pset_id)
 	self.materials.append({"id": len(self.materials),
@@ -23,7 +23,7 @@ def create_Glen2D(self, pset_id=0,density=900,
 # The usual start of a PyCBG script:
 sim = utl.Simulation(title="slump")
 
-resolution = 25
+resolution = 20
 resolutions = [resolution,resolution ]
 
 # Creating the mesh:
@@ -48,9 +48,9 @@ pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r i
 #pmesh = utl.Mesh(dimensions=particle_dims, ncells=(particle_dims[0]//resolution,particle_dims[1]//resolution,1))
 # Creating Material Points, could have been done by filling an array manually:
 #sim.create_particles(npart_perdim_percell=1)
-mps_per_cell = 4
+mps_per_cell = 2
 
-sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particle_type = "FS")
+sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particle_type = "")
 
 #mps_array = [1,1]
 #eff_res = [r/(mps_per_cell*mps) for r,mps in zip(resolutions,mps_array)]
@@ -87,13 +87,12 @@ maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 
 E = 1e9
 nu = 0.325
-visc = 11e6
+visc = 1e6
 density = 900
 density_water = 999
 
 # The materials properties:
 #sim.materials.create_MohrCoulomb3D(pset_id=lower_particles)
-#sim.materials.create_LinearElastic(pset_id=maxwell_particles,density=900,youngs_modulus=1e7,poisson_ratio=nu)
 #sim.materials.create_Newtonian3D(pset_id=maxwell_particles)
 #create_Newtonian3D(sim.materials,pset_id=maxwell_particles)
 #create_Maxwell3D(sim.materials,pset_id=maxwell_particles)
@@ -103,14 +102,15 @@ density_water = 999
 #        poisson_ratio=0.45,
 #        viscosity=1e-30,viscous_power=3)
 
+#sim.materials.create_Newtonian(pset_id=maxwell_particles)
 create_Glen2D(sim.materials,pset_id=maxwell_particles,
-        density=900,
-        youngs_modulus=E,
-        poisson_ratio=nu,
-        #viscosity=2.24e-24,
-        viscosity=visc,
-        viscous_power=3
-        )
+       density=900,
+       youngs_modulus=E,
+       poisson_ratio=nu,
+       viscosity=visc,
+       viscous_power=3.0
+       )
+#sim.materials.create_LinearElastic(pset_id=maxwell_particles,density=900,youngs_modulus=1e7,poisson_ratio=nu)
 #create_Glen2D(sim.materials,pset_id=maxwell_particles,
 #        density=900,
 #        youngs_modulus=E,
@@ -134,7 +134,7 @@ for direction, sets in enumerate(walls): _ = [sim.add_velocity_condition(directi
 
 # Other simulation parameters (gravity, number of iterations, time step, ..):
 sim.set_gravity([0,-9.81])
-time = 1000
+time = 100
 nsteps = time//dt
 sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps, 
         output_step_interval=nsteps/100,
@@ -142,7 +142,7 @@ sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps,
         
 
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 1e8}
-sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-3}
+#sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-4}
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": K*1e-2}
 #sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.05}
 sim.post_processing["vtk"] = ["stresses"]
