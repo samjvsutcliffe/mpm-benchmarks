@@ -1,7 +1,7 @@
 {
-    "title": "consol",
+    "title": "slump",
     "mesh": {
-        "mesh": "consol/mesh.txt",
+        "mesh": "slump/mesh.txt",
         "boundary_conditions": {
             "velocity_constraints": [
                 {
@@ -26,24 +26,36 @@
                 }
             ],
             "friction_constraints": [],
-            "nonconforming_traction_constraints": [],
+            "nonconforming_traction_constraints": [
+                {
+                    "hydrostatic": true,
+                    "datum": 300,
+                    "fluid_density": 1000,
+                    "bounding_box": [
+                        0,
+                        8000,
+                        0,
+                        600
+                    ]
+                }
+            ],
             "particles_velocity_constraints": []
         },
         "isoparametric": false,
         "check_duplicates": true,
-        "cell_type": "ED2GIMP",
+        "cell_type": "ED2Q4",
         "io_type": "Ascii2D",
         "node_type": "N2D",
-        "entity_sets": "consol/entity_sets.json"
+        "entity_sets": "slump/entity_sets.json"
     },
     "particles": [
         {
             "generator": {
                 "check_duplicates": true,
-                "location": "consol/particles.txt",
+                "location": "slump/particles.txt",
                 "io_type": "Ascii2D",
                 "pset_id": 0,
-                "particle_type": "P2DFS",
+                "particle_type": "P2D",
                 "material_id": 0,
                 "type": "file"
             }
@@ -52,10 +64,12 @@
     "materials": [
         {
             "id": 0,
-            "type": "LinearElastic2D",
-            "density": 800,
-            "youngs_modulus": 1000000.0,
-            "poisson_ratio": 0.0
+            "type": "Glen2D",
+            "density": 900,
+            "youngs_modulus": 1000000000.0,
+            "poisson_ratio": 0.325,
+            "viscosity": 11000000.0,
+            "viscous_power": 3.0
         }
     ],
     "material_sets": [
@@ -67,26 +81,26 @@
     "external_loading_conditions": {
         "gravity": [
             0,
-            -10
+            -9.81
         ]
     },
     "analysis": {
         "type": "MPMExplicit2D",
-        "mpm_scheme": "USF",
+        "mpm_scheme": "usf",
         "locate_particles": false,
         "dt": 0.01,
         "damping": {
             "type": "Viscous",
-            "damping_factor": 1
+            "damping_factor": 1000000.0
         },
         "velocity_update": "flip",
-        "nsteps": 2000,
+        "nsteps": 9999,
         "verbosity": 100,
-        "uuid": "consol"
+        "uuid": "slump"
     },
     "post_processing": {
-        "path": "consol/results/",
-        "output_steps": 20,
+        "path": "slump/results/",
+        "output_steps": 99,
         "vtk": [
             "stresses"
         ]

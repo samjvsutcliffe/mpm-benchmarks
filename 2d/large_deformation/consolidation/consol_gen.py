@@ -2,17 +2,18 @@ import pycbg.preprocessing as utl
 from pycbg.mesh import Mesh
 import numpy as np
 import math
-dt = 1e-3
+dt = 1e-2
 
 # The usual start of a PyCBG script:
 sim = utl.Simulation(title="consol")
 
 #elements = 2**5
-elements = 2**11
+elements = 2**5
 print("Elements",elements)
 length = 50
 resolution = length/elements
 dt = 1e-2 * ((2**5)/elements)
+#dt = 1e-2 * ((2**5)/2**8)
 #dt = dt * 1e-3
 print("Dt suggested {}".format(dt))
 #dt = 1e-4
@@ -24,6 +25,7 @@ resolutions = [resolution,resolution]
 #shelf_length = resolution
 particle_dims   = (resolution,length)
 domain_dims     = (resolution,length + (2*resolution))
+#particle_dims   = (resolution,resolution)
 
 #length = 1
 #particle_dims = (resolution,resolution*2)
@@ -39,7 +41,7 @@ sim.create_mesh(dimensions=domain_dims, ncells=[x//r for x,r in zip(domain_dims,
 pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,0,0), ncells=[x//r for x,r in zip(particle_dims,resolutions)],cell_type=node_type)
 
 mps_per_cell = 2
-sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particle_type="")
+sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particle_type="FS")
 
 #mps_array = [1,4]
 #eff_res = [r/(mps_per_cell*mps) for r,mps in zip(resolutions,mps_array)]
@@ -64,7 +66,7 @@ maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 
 E = 1e6
 nu = 0.0
-density = 80
+density = 800
 density_water = 999
 
 # The materials properties:
@@ -79,7 +81,7 @@ for direction, sets in enumerate(walls): _ = [sim.add_velocity_condition(directi
 
 # Other simulation parameters (gravity, number of iterations, time step, ..):
 sim.set_gravity([0,-10])
-time = 10
+time = 20
 nsteps = int(time/dt)
 sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps, 
         output_step_interval=nsteps/100,
@@ -87,11 +89,12 @@ sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps,
         damping=0.00)
         
 
-#sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-4 * resolution}
+sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 1}
+       # E*1e-8}
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-5*(2**5)/elements}
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-8}
 #sim.analysis_params["velocity_update"] = True
-sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.10}
+#sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.10}
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 0.0}
 sim.post_processing["vtk"] = ["stresses"]
 
