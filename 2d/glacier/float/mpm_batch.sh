@@ -21,6 +21,6 @@ source ~/cb-geo/mpm/build/setup-vars.sh
 echo "Generating files"
 python3 slump_gen.py
 echo "Removing files"
-rm ./slump/results/slump/*
+rm ./notch/results/notch/*
 echo "Running code"
-~/cb-geo/mpm/build/mpm -f ./ -i ./slump/input_file.json
+~/cb-geo/mpm/build/mpm -f ./ -i ./notch/input_file.json

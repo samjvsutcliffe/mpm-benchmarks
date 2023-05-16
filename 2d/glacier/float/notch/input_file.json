@@ -1,7 +1,7 @@
 {
-    "title": "slump",
+    "title": "notch",
     "mesh": {
-        "mesh": "slump/mesh.txt",
+        "mesh": "notch/mesh.txt",
         "boundary_conditions": {
             "velocity_constraints": [
                 {
@@ -46,16 +46,16 @@
         "cell_type": "ED2Q4",
         "io_type": "Ascii2D",
         "node_type": "N2D",
-        "entity_sets": "slump/entity_sets.json"
+        "entity_sets": "notch/entity_sets.json"
     },
     "particles": [
         {
             "generator": {
                 "check_duplicates": true,
-                "location": "slump/particles.txt",
+                "location": "notch/particles.txt",
                 "io_type": "Ascii2D",
                 "pset_id": 0,
-                "particle_type": "P2D",
+                "particle_type": "P2D_DAMAGE",
                 "material_id": 0,
                 "type": "file"
             }
@@ -64,12 +64,13 @@
     "materials": [
         {
             "id": 0,
-            "type": "Glen2D",
+            "type": "LinearElasticDamage2D",
             "density": 900,
-            "youngs_modulus": 1000000000.0,
+            "youngs_modulus": 100000000.0,
             "poisson_ratio": 0.325,
-            "viscosity": 11000000.0,
-            "viscous_power": 3.0
+            "critical_stress": 330000.0,
+            "local_length": 50,
+            "damage_rate": 1e-08
         }
     ],
     "material_sets": [
@@ -91,18 +92,19 @@
         "dt": 0.01,
         "damping": {
             "type": "Viscous",
-            "damping_factor": 1000000.0
+            "damping_factor": 0.01
         },
         "velocity_update": "flip",
         "nsteps": 9999,
         "verbosity": 100,
-        "uuid": "slump"
+        "uuid": "notch"
     },
     "post_processing": {
-        "path": "slump/results/",
+        "path": "notch/results/",
         "output_steps": 99,
         "vtk": [
-            "stresses"
+            "stresses",
+            "damage"
         ]
     }
 }

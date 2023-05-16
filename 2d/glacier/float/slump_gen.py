@@ -4,6 +4,23 @@ import numpy as np
 import math
 dt = 1e-2
 
+def create_LinearElasticDamage(self, pset_id=0,density=900,
+        youngs_modulus=1e6,
+        poisson_ratio=0.3,
+        critical_stress=1e5,
+        damage_rate=1
+        ):
+	self.pset_ids.append(pset_id)
+	self.materials.append({"id": len(self.materials),
+	"type": "LinearElasticDamage2D",
+	"density": density,
+	"youngs_modulus": youngs_modulus,
+	"poisson_ratio": poisson_ratio,
+	"critical_stress": critical_stress,
+        "local_length": 50,
+	"damage_rate": damage_rate
+        })
+
 def create_Glen2D(self, pset_id=0,density=900,
         youngs_modulus=1e9,
         poisson_ratio=0.3,
@@ -44,7 +61,7 @@ def remove_sdf(sim,sdf):
     sim.particles.positions = np.array(sim.particles.positions[ids])
 	
 # The usual start of a PyCBG script:
-sim = utl.Simulation(title="slump")
+sim = utl.Simulation(title="notch")
 
 resolution = 20
 resolutions = [resolution,resolution ]
@@ -73,7 +90,7 @@ pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,120,0), ncells=[x//r for x,r
 #sim.create_particles(npart_perdim_percell=1)
 mps_per_cell = 2
 
-sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particle_type = "")
+sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particle_type = "_DAMAGE")
 
 remove_sdf(sim,lambda xi: sdf_rect(xi,[shelf_length,300],[100,30]))
 
@@ -110,11 +127,12 @@ sim.particles.write_file()
 # Creating entity sets (the 2 materials), using lambda functions:
 maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 
-E = 1e9
+E = 1e8
 nu = 0.325
-visc = 11e6
 density = 900
-density_water = 999
+density_water = 1000
+crit = 0.33e6
+damage_rate = 1e-8
 
 # The materials properties:
 #sim.materials.create_MohrCoulomb3D(pset_id=lower_particles)
@@ -128,13 +146,14 @@ density_water = 999
 #        viscosity=1e-30,viscous_power=3)
 
 #sim.materials.create_Newtonian(pset_id=maxwell_particles)
-create_Glen2D(sim.materials,pset_id=maxwell_particles,
-       density=900,
-       youngs_modulus=E,
-       poisson_ratio=nu,
-       viscosity=visc,
-       viscous_power=3.0
-       )
+#create_Glen2D(sim.materials,pset_id=maxwell_particles,
+#       density=900,
+#       youngs_modulus=E,
+#       poisson_ratio=nu,
+#       viscosity=visc,
+#       viscous_power=3.0
+#       )
+create_LinearElasticDamage(sim.materials,pset_id=maxwell_particles,density=density,youngs_modulus=E,poisson_ratio=nu,critical_stress=crit,damage_rate=damage_rate)
 #sim.materials.create_LinearElastic(pset_id=maxwell_particles,density=900,youngs_modulus=1e7,poisson_ratio=nu)
 #create_Glen2D(sim.materials,pset_id=maxwell_particles,
 #        density=900,
@@ -168,9 +187,9 @@ sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps,
 
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 1e8}
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-4}
-sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-3}
+sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 0.01}
 #sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.05}
-sim.post_processing["vtk"] = ["stresses"]
+sim.post_processing["vtk"] = ["stresses","damage"]
 
 # Save user defined parameters to be reused at the postprocessing stage:
 sim.add_custom_parameters({"maxwell_particles": maxwell_particles,
@@ -178,12 +197,16 @@ sim.add_custom_parameters({"maxwell_particles": maxwell_particles,
 # Final generation of input files:
 sim.write_input_file()
 
+
 l = E * nu / ((1+nu)*(1-2*nu))
 mu = E / (2*(1+nu))
 
 bulk_stiffness = ((3 * l)+(2*mu))/3
 min_x = min(resolutions[0:1])
 speed_of_sound = math.sqrt(bulk_stiffness/density)
+
+pmod = (E / (1+nu)*(1-nu))
+print("Pmod dt est {}".format(min_x * np.sqrt(density/pmod)))
 
 courant = speed_of_sound * dt/min_x
 
