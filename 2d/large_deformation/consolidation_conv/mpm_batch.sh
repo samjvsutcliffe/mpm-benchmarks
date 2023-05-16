@@ -26,7 +26,7 @@ rm -r ./conv_files/*
 echo "Generating files"
 export OMP_SCHEDULE="static"
 python3 converg_gen.py
-for i in {1..10}
+for i in {1..13}
 do
     echo "Running consol_conv_$((2**$i))"
     mpm -i ./consol_conv_$((2**$i))/input_file.json -f ./
