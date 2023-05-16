@@ -26,6 +26,7 @@
                 }
             ],
             "friction_constraints": [],
+            "nonconforming_traction_constraints": [],
             "particles_velocity_constraints": []
         },
         "isoparametric": false,
@@ -42,7 +43,7 @@
                 "location": "consol/particles.txt",
                 "io_type": "Ascii2D",
                 "pset_id": 0,
-                "particle_type": "P2D",
+                "particle_type": "P2DFS",
                 "material_id": 0,
                 "type": "file"
             }
@@ -52,7 +53,7 @@
         {
             "id": 0,
             "type": "LinearElastic2D",
-            "density": 80,
+            "density": 800,
             "youngs_modulus": 1000000.0,
             "poisson_ratio": 0.0
         }
@@ -73,19 +74,19 @@
         "type": "MPMExplicit2D",
         "mpm_scheme": "USF",
         "locate_particles": false,
-        "dt": 0.00015625,
+        "dt": 0.01,
         "damping": {
-            "type": "Cundall",
-            "damping_factor": 0.1
+            "type": "Viscous",
+            "damping_factor": 1
         },
         "velocity_update": "flip",
-        "nsteps": 64000,
+        "nsteps": 2000,
         "verbosity": 100,
         "uuid": "consol"
     },
     "post_processing": {
         "path": "consol/results/",
-        "output_steps": 640,
+        "output_steps": 20,
         "vtk": [
             "stresses"
         ]
