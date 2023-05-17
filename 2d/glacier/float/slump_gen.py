@@ -104,6 +104,22 @@ remove_sdf(sim,lambda xi: sdf_rect(xi,[shelf_length,300],[100,30]))
 #        #0.5:1:0.5
 #        #origin[2]:particle_dims[2]:eff_res[2],
 #        ].reshape(2,-1).T 
+g = -9.8
+
+density = 900
+density_water = 20*20*1000
+
+height = sim.particles.positions[:,1]
+datum = 300
+
+p = density_water * np.maximum(datum-height,0) * g 
+
+#s_patch = np.array([1,1,1,0,0,0])
+s_patch = np.tile(np.array([1,1,1,0,0,0]),(len(height),1))
+
+print(np.transpose(np.tile(height,(6,1))))
+print(np.multiply(s_patch,np.transpose(np.tile(p,(6,1)))))
+sim.set_initial_particles_stresses(np.multiply(s_patch,np.transpose(np.tile(p,(6,1)))))
 
 sim.init_entity_sets()
 
@@ -127,12 +143,10 @@ sim.particles.write_file()
 # Creating entity sets (the 2 materials), using lambda functions:
 maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 
-E = 1e8
+E = 1e9
 nu = 0.325
-density = 900
-density_water = 1000
 crit = 0.33e6
-damage_rate = 1e-8
+damage_rate = 0e-18
 
 # The materials properties:
 #sim.materials.create_MohrCoulomb3D(pset_id=lower_particles)
@@ -177,8 +191,8 @@ sim.add_buoyancy_condition(300,1000,[0,8000,0,600])
 #sim.add_velocity_condition(0,0.0,sim.entity_sets.create_set(lambda x,y: x==500 and y<100, typ="node"))
 
 # Other simulation parameters (gravity, number of iterations, time step, ..):
-sim.set_gravity([0,-9.81])
-time = 100
+sim.set_gravity([0,g])
+time = 10
 nsteps = time//dt
 sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps, 
         output_step_interval=nsteps/100,
@@ -187,7 +201,7 @@ sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps,
 
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 1e8}
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-4}
-sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 0.01}
+sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 0.1}
 #sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.05}
 sim.post_processing["vtk"] = ["stresses","damage"]
 

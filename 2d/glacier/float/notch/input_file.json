@@ -46,7 +46,8 @@
         "cell_type": "ED2Q4",
         "io_type": "Ascii2D",
         "node_type": "N2D",
-        "entity_sets": "notch/entity_sets.json"
+        "entity_sets": "notch/entity_sets.json",
+        "particles_stresses": "notch/particles_stresses.txt"
     },
     "particles": [
         {
@@ -66,11 +67,11 @@
             "id": 0,
             "type": "LinearElasticDamage2D",
             "density": 900,
-            "youngs_modulus": 100000000.0,
+            "youngs_modulus": 1000000000.0,
             "poisson_ratio": 0.325,
             "critical_stress": 330000.0,
             "local_length": 50,
-            "damage_rate": 1e-08
+            "damage_rate": 0.0
         }
     ],
     "material_sets": [
@@ -82,7 +83,7 @@
     "external_loading_conditions": {
         "gravity": [
             0,
-            -9.81
+            -9.8
         ]
     },
     "analysis": {
@@ -92,16 +93,16 @@
         "dt": 0.01,
         "damping": {
             "type": "Viscous",
-            "damping_factor": 0.01
+            "damping_factor": 0.1
         },
         "velocity_update": "flip",
-        "nsteps": 9999,
+        "nsteps": 999,
         "verbosity": 100,
         "uuid": "notch"
     },
     "post_processing": {
         "path": "notch/results/",
-        "output_steps": 99,
+        "output_steps": 9,
         "vtk": [
             "stresses",
             "damage"
