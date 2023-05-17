@@ -74,8 +74,8 @@ particle_dims = (shelf_length,200.)
 domain_dims = (4000.,500.)
 
 
-node_type = "ED2Q4"
-#node_type = "ED2GIMP"
+#node_type = "ED2Q4"
+node_type = "ED2GIMP"
 #node_type = "ED2Q16G"
 sim.create_mesh(dimensions=domain_dims, ncells=[x//r for x,r in zip(domain_dims,resolutions)],cell_type = node_type)
 pmesh = utl.Mesh(dimensions=particle_dims,origin=(0,120,0), ncells=[x//r for x,r in zip(particle_dims,resolutions)],cell_type =node_type)
@@ -107,7 +107,7 @@ remove_sdf(sim,lambda xi: sdf_rect(xi,[shelf_length,300],[100,30]))
 g = -9.8
 
 density = 900
-density_water = 20*20*1000
+density_water = 1000
 
 height = sim.particles.positions[:,1]
 datum = 300
@@ -146,7 +146,7 @@ maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 E = 1e9
 nu = 0.325
 crit = 0.33e6
-damage_rate = 0e-18
+damage_rate = 1e-20
 
 # The materials properties:
 #sim.materials.create_MohrCoulomb3D(pset_id=lower_particles)
@@ -192,7 +192,7 @@ sim.add_buoyancy_condition(300,1000,[0,8000,0,600])
 
 # Other simulation parameters (gravity, number of iterations, time step, ..):
 sim.set_gravity([0,g])
-time = 10
+time = 100
 nsteps = time//dt
 sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps, 
         output_step_interval=nsteps/100,
@@ -203,7 +203,7 @@ sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps,
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-4}
 sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 0.1}
 #sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.05}
-sim.post_processing["vtk"] = ["stresses","damage"]
+sim.post_processing["vtk"] = ["stresses","damage","ybar"]
 
 # Save user defined parameters to be reused at the postprocessing stage:
 sim.add_custom_parameters({"maxwell_particles": maxwell_particles,

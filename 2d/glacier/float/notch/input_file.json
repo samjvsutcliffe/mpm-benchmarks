@@ -43,7 +43,7 @@
         },
         "isoparametric": false,
         "check_duplicates": true,
-        "cell_type": "ED2Q4",
+        "cell_type": "ED2GIMP",
         "io_type": "Ascii2D",
         "node_type": "N2D",
         "entity_sets": "notch/entity_sets.json",
@@ -71,7 +71,7 @@
             "poisson_ratio": 0.325,
             "critical_stress": 330000.0,
             "local_length": 50,
-            "damage_rate": 0.0
+            "damage_rate": 1e-20
         }
     ],
     "material_sets": [
@@ -96,16 +96,17 @@
             "damping_factor": 0.1
         },
         "velocity_update": "flip",
-        "nsteps": 999,
+        "nsteps": 9999,
         "verbosity": 100,
         "uuid": "notch"
     },
     "post_processing": {
         "path": "notch/results/",
-        "output_steps": 9,
+        "output_steps": 99,
         "vtk": [
             "stresses",
-            "damage"
+            "damage",
+            "ybar"
         ]
     }
 }
