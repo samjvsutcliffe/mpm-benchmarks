@@ -8,6 +8,7 @@ def create_LinearElasticDamage(self, pset_id=0,density=900,
         youngs_modulus=1e6,
         poisson_ratio=0.3,
         critical_stress=1e5,
+        critical_damage=1,
         damage_rate=1
         ):
 	self.pset_ids.append(pset_id)
@@ -17,6 +18,7 @@ def create_LinearElasticDamage(self, pset_id=0,density=900,
 	"youngs_modulus": youngs_modulus,
 	"poisson_ratio": poisson_ratio,
 	"critical_stress": critical_stress,
+	"critical_damage": critical_damage,
         "local_length": 50,
 	"damage_rate": damage_rate
         })
@@ -92,7 +94,7 @@ mps_per_cell = 2
 
 sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particle_type = "_DAMAGE")
 
-remove_sdf(sim,lambda xi: sdf_rect(xi,[shelf_length,300],[100,30]))
+remove_sdf(sim,lambda xi: sdf_rect(xi,[shelf_length,320],[100,30]))
 
 #mps_array = [1,1]
 #eff_res = [r/(mps_per_cell*mps) for r,mps in zip(resolutions,mps_array)]
@@ -146,7 +148,8 @@ maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 E = 1e9
 nu = 0.325
 crit = 0.33e6
-damage_rate = 1e-20
+damage_rate = 1e-18
+critical_damage = 0.5
 
 # The materials properties:
 #sim.materials.create_MohrCoulomb3D(pset_id=lower_particles)
@@ -167,7 +170,7 @@ damage_rate = 1e-20
 #       viscosity=visc,
 #       viscous_power=3.0
 #       )
-create_LinearElasticDamage(sim.materials,pset_id=maxwell_particles,density=density,youngs_modulus=E,poisson_ratio=nu,critical_stress=crit,damage_rate=damage_rate)
+create_LinearElasticDamage(sim.materials,pset_id=maxwell_particles,density=density,youngs_modulus=E,poisson_ratio=nu,critical_stress=crit,damage_rate=damage_rate,critical_damage=critical_damage)
 #sim.materials.create_LinearElastic(pset_id=maxwell_particles,density=900,youngs_modulus=1e7,poisson_ratio=nu)
 #create_Glen2D(sim.materials,pset_id=maxwell_particles,
 #        density=900,
@@ -190,6 +193,18 @@ sim.add_buoyancy_condition(300,1000,[0,8000,0,600])
 #sim.add_force(1,9.81 * (density_water) * (resolution**2),sim.entity_sets.create_set(lambda x,y: x>=shelf_length and y<100, typ="node"))
 #sim.add_velocity_condition(0,0.0,sim.entity_sets.create_set(lambda x,y: x==500 and y<100, typ="node"))
 
+l = E * nu / ((1+nu)*(1-2*nu))
+mu = E / (2*(1+nu))
+
+bulk_stiffness = ((3 * l)+(2*mu))/3
+min_x = min(resolutions[0:1])
+speed_of_sound = math.sqrt(bulk_stiffness/density)
+
+pmod = (E / (1+nu)*(1-nu))
+dt = min_x * np.sqrt(density/pmod)
+dt = 1e-2
+print("Pmod dt est {}".format(dt))
+
 # Other simulation parameters (gravity, number of iterations, time step, ..):
 sim.set_gravity([0,g])
 time = 100
@@ -201,8 +216,11 @@ sim.set_analysis_parameters(dt=dt,type="MPMExplicit2D", nsteps=nsteps,
 
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 1e8}
 #sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": E*1e-4}
-sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 0.1}
+sim.analysis_params["damping"] = {"type": "Viscous", "damping_factor": 0.01}
 #sim.analysis_params["damping"] = {"type": "Cundall", "damping_factor": 0.05}
+sim.analysis_params["damage_enable"] = True
+sim.analysis_params["damage_removal"] = True
+sim.analysis_params["damage_nonlocal"] = True
 sim.post_processing["vtk"] = ["stresses","damage","ybar"]
 
 # Save user defined parameters to be reused at the postprocessing stage:
@@ -211,16 +229,6 @@ sim.add_custom_parameters({"maxwell_particles": maxwell_particles,
 # Final generation of input files:
 sim.write_input_file()
 
-
-l = E * nu / ((1+nu)*(1-2*nu))
-mu = E / (2*(1+nu))
-
-bulk_stiffness = ((3 * l)+(2*mu))/3
-min_x = min(resolutions[0:1])
-speed_of_sound = math.sqrt(bulk_stiffness/density)
-
-pmod = (E / (1+nu)*(1-nu))
-print("Pmod dt est {}".format(min_x * np.sqrt(density/pmod)))
 
 courant = speed_of_sound * dt/min_x
 
