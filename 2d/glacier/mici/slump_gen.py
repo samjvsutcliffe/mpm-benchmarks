@@ -21,6 +21,8 @@ def create_LinearElasticDamage(self, pset_id=0,density=900,
 	"critical_damage": critical_damage,
         "local_length": 50,
         "local_length_damaged": 0.1,
+        "degredation_function": "deviatoric",
+        "stress_measure": "VM",
 	"damage_rate": damage_rate
         })
 def create_GlenDamage(self, pset_id=0,density=900,
@@ -76,7 +78,8 @@ shelf_ratio = 4
 
 shelf_length = 500
 #particle_dims = (shelf_length,500.)
-shelf_height = 800
+shelf_height = 500
+datum = shelf_height * 0.5
 shelf_length = shelf_height * shelf_ratio
 particle_dims = (shelf_length,shelf_height)
 domain_dims = (shelf_length+shelf_height,shelf_height + 100.)
@@ -111,10 +114,19 @@ sim.particles = utl.Particles(pmesh,mps_per_cell,directory=sim.directory,particl
 #        #origin[2]:particle_dims[2]:eff_res[2],
 #        ].reshape(2,-1).T 
 
+density = 900
+density_water = 1000
+g = -9.8
+height = sim.particles.positions[:,1]
+p = density_water * np.maximum(datum-height,0) * g 
+s_patch = np.tile(np.array([1,1,1,0,0,0]),(len(height),1))
+print(np.transpose(np.tile(height,(6,1))))
+print(np.multiply(s_patch,np.transpose(np.tile(p,(6,1)))))
+sim.set_initial_particles_stresses(np.multiply(s_patch,np.transpose(np.tile(p,(6,1)))))
 #sim.set_initial_particles_volumes(np.ones(len(sim.particles.positions)) * (np.power(resolution / mps_per_cell,2)))
 sim.init_entity_sets()
-
 sim.particles._filename = "particles.txt"
+
 #sim.particles.type = "inject"
 #sim.particles.nparticles_per_dir = mps_per_cell
 #inflow_rate = 1
@@ -127,6 +139,7 @@ sim.particles._filename = "particles.txt"
 #        ids.append(i)
 #
 #sim.particles.cset_id = sim.entity_sets.create_set(lambda *args:any(arg in ids for arg in args), typ="cell")
+
 sim.particles.write_file()
 
 
@@ -137,8 +150,6 @@ maxwell_particles = sim.entity_sets.create_set(lambda x,y: True, typ="particle")
 E = 1e9
 nu = 0.325
 visc = 111e6
-density = 900
-density_water = 999
 crit = 0.33e6
 damage_rate = 1e-08
 critical_damage = 0.60
@@ -189,7 +200,8 @@ walls.append([sim.entity_sets.create_set(lambda x,y: y==lim, typ="node") for lim
 #walls.append([sim.entity_sets.create_set(lambda x,y: z==lim, typ="node") for lim in [0, sim.mesh.l2]])
 for direction, sets in enumerate(walls): _ = [sim.add_velocity_condition(direction, 0., es) for es in sets]
 #sim.add_velocity_condition(0, 0., walls[1][0])
-sim.add_friction_condition(1,-1,0.5,walls[1][0])
+#sim.add_friction_condition(1,-1,0.5,walls[1][0])
+sim.add_buoyancy_condition(datum,density_water,[0,8000,0,1000])
 
 #sim.add_velocity_condition(1,0.0,sim.entity_sets.create_set(lambda x,y: x<=shelf_length and y==100, typ="node"))
 #sim.add_friction_condition(1,-1,0.9,sim.entity_sets.create_set(lambda x,y: y==0 and x <=250, typ="node"))
@@ -229,7 +241,7 @@ sim.analysis_params["damage_enable"] = True
 sim.analysis_params["damage_removal"] = False
 sim.analysis_params["damage_nonlocal"] = True
 sim.analysis_params["mass_scale"] = mass_scale
-sim.post_processing["vtk"] = ["stresses","damage","damage_inc","ybar","velocities"]
+sim.post_processing["vtk"] = ["stresses","damage","ybar","displacements"]
 
 # Save user defined parameters to be reused at the postprocessing stage:
 sim.add_custom_parameters({"maxwell_particles": maxwell_particles,
