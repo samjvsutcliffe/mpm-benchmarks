@@ -68,7 +68,7 @@ def create_Glen2D(self, pset_id=0,density=900,
 # The usual start of a PyCBG script:
 sim = utl.Simulation(title="slump")
 
-resolution = 20
+resolution = 50
 resolutions = [resolution,resolution ]
 
 # Creating the mesh:
